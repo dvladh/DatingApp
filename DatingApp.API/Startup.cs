@@ -13,6 +13,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace DatingApp.API
 {
@@ -32,6 +35,16 @@ namespace DatingApp.API
         {
             services.AddScoped<IHelper, Helper>();
             services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options => {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {                       
+                       ValidateIssuerSigningKey = true,
+                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
+                       ValidateIssuer = false,
+                       ValidateAudience = false                       
+                    };
+                });
 
             services.AddCors(options => {
                 options.AddDefaultPolicy(builder => {
@@ -50,13 +63,11 @@ namespace DatingApp.API
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors();
-            
+            app.UseCors();                  
             // app.UseHttpsRedirection();
-
             app.UseRouting();
-
-            app.UseAuthorization();
+            app.UseAuthentication();
+            app.UseAuthorization();         
 
             app.UseEndpoints(endpoints =>
             {
