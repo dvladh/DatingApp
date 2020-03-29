@@ -46,9 +46,13 @@ namespace DatingApp.API
                     };
                 });
 
-            services.AddCors(options => {
-                options.AddDefaultPolicy(builder => {
-                    builder.WithOrigins("http://localhost:4200");
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin();
+                    builder.AllowAnyHeader();
+                    builder.AllowAnyMethod();
                 });
             });
             services.AddDbContext<DataContext>(x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
