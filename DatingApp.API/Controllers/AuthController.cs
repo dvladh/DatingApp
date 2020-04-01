@@ -92,6 +92,6 @@ namespace DatingApp.API.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptior);
 
             return Ok(new { token = tokenHandler.WriteToken(token) });
-        }
+        }        
     }
 }
