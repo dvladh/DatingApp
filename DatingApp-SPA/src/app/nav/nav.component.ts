@@ -7,21 +7,32 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./nav.component.css']
 })
 export class NavComponent implements OnInit {
-
   model: any = {};
+  username: string;
 
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
-  ngOnInit() {
+  ngOnInit() {}
+
+  WelcomeUser() {
+    const token = localStorage.getItem('token');
+    let jwtData = token.split('.')[1];
+    let decodedJwtJsonData = window.atob(jwtData);
+    let decodedJwtData = JSON.parse(decodedJwtJsonData);
+    this.username = decodedJwtData.unique_name;
   }
 
   login() {
     console.log(this.model);
-    this.authService.login(this.model).subscribe(next => {
-      console.log('Logged in successfully');
-    }, error => {
-      console.log('Failed to login');
-    });
+    this.authService.login(this.model).subscribe(
+      next => {
+        console.log('Logged in successfully');
+        this.WelcomeUser();
+      },
+      error => {
+        console.log('Failed to login');
+      }
+    );
   }
 
   loggedIn() {
@@ -32,5 +43,10 @@ export class NavComponent implements OnInit {
   logout() {
     localStorage.removeItem('token');
     console.log('logged out');
+  }
+
+  toggle()
+  {
+
   }
 }
