@@ -30,7 +30,7 @@ export class NavComponent implements OnInit {
         this.WelcomeUser();
       },
       error => {
-        console.log('Failed to login');
+        console.log(error);
       }
     );
   }
