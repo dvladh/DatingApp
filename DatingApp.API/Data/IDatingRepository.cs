@@ -12,5 +12,6 @@ namespace DatingApp.API.Data
         void Update<T>(T entity) where T: class;      
         Task<IEnumerable<User>> GetUsers();
         Task<User> GetUser(int id);
+        Task<Photo> GetPhoto(int id);
     }
 }
