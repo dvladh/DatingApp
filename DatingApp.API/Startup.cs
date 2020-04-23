@@ -59,7 +59,7 @@ namespace DatingApp.API
                 {
                     builder.AllowAnyOrigin();
                     builder.AllowAnyHeader();
-                    builder.AllowAnyMethod();
+                    builder.AllowAnyMethod();                    
                 });
             });
 

@@ -10,10 +10,15 @@ import { Component, OnInit } from '@angular/core';
 export class NavComponent implements OnInit {
   model: any = {};
   username: string;
+  photoUrl: string;
 
   constructor(public authService: AuthService, private alertify: AlertifyService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.authService.currentPhotoUrl.subscribe(photoUrl => {
+      this.photoUrl = photoUrl;
+    });
+  }
 
   login() {
     console.log(this.model);
@@ -33,6 +38,9 @@ export class NavComponent implements OnInit {
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.authService.decodedToken = null;
+    this.authService.currentUser = null;
     this.alertify.message('Logged out');
   }
 

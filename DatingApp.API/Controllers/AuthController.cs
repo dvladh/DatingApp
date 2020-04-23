@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using AutoMapper;
 
 namespace DatingApp.API.Controllers
 {
@@ -19,11 +20,13 @@ namespace DatingApp.API.Controllers
     {
         private readonly IAuthRepository _repo;
         public IConfiguration _config { get; }
+        private readonly IMapper _mapper;
 
-        public AuthController(IAuthRepository repo, IConfiguration config)
+        public AuthController(IAuthRepository repo, IConfiguration config, IMapper mapper)
         {
             _repo = repo;
             _config = config;
+            _mapper = mapper;
         }
 
         [HttpPost("register")]
@@ -64,7 +67,7 @@ namespace DatingApp.API.Controllers
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
-                new Claim(ClaimTypes.Name, userFromRepo.Username)
+                new Claim(ClaimTypes.Name, userFromRepo.Username)                
             };
 
             // 2. Creating Security Key
@@ -91,7 +94,13 @@ namespace DatingApp.API.Controllers
             // Finaly creating token using token handler passing token descriptor
             var token = tokenHandler.CreateToken(tokenDescriptior);
 
-            return Ok(new { token = tokenHandler.WriteToken(token) });
+            var user =_mapper.Map<UserForListDto>(userFromRepo);
+
+            return Ok(new
+            {
+                token = tokenHandler.WriteToken(token),
+                user
+            });
         }        
     }
 }
