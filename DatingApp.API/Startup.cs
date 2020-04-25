@@ -53,6 +53,8 @@ namespace DatingApp.API
                     };
                 });
 
+            services.AddScoped<LogUserActivity>();
+
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(builder =>
