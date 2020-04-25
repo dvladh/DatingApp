@@ -37,19 +37,18 @@ namespace DatingApp.API.Controllers
             if (await _repo.UserExists(userForRegisterDto.Username))
                 return BadRequest("Username already exists");
 
-            var userToCreate = new User
-            {
-                Username = userForRegisterDto.Username
-            };
+            var userToCreate = _mapper.Map<User>(userForRegisterDto);
 
             var regUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
 
-            return StatusCode(201);
+            var userForReturn = _mapper.Map<UserForDetailedDto>(regUser);
+
+            return CreatedAtRoute("GetUser", new { controller = "Users", userId = userForReturn.Id }, userForReturn);
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserForLoginDto userForLoginDto)
-        {                        
+        {
             // Chekin to be sure we have a user with these credentials
             var userFromRepo = await _repo.Login(userForLoginDto.Username.ToLower(), userForLoginDto.Password);
 
@@ -67,7 +66,7 @@ namespace DatingApp.API.Controllers
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
-                new Claim(ClaimTypes.Name, userFromRepo.Username)                
+                new Claim(ClaimTypes.Name, userFromRepo.Username)
             };
 
             // 2. Creating Security Key
@@ -94,13 +93,13 @@ namespace DatingApp.API.Controllers
             // Finaly creating token using token handler passing token descriptor
             var token = tokenHandler.CreateToken(tokenDescriptior);
 
-            var user =_mapper.Map<UserForListDto>(userFromRepo);
+            var user = _mapper.Map<UserForListDto>(userFromRepo);
 
             return Ok(new
             {
                 token = tokenHandler.WriteToken(token),
                 user
             });
-        }        
+        }
     }
 }
