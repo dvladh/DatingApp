@@ -1,28 +1,40 @@
 using System;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace DatingApp.API.Helpers
 {
     public static class Extensions
     {
-         public static void AddApplicationError(this HttpResponse response, string message)
-         {
-             response.Headers.Add("Application-Error", message);
-             response.Headers.Add("Access-Control-Expose-Headers", "Application-Error");
-             response.Headers.Add("Access-Control-Allow-Origin", "*");
-         }
+        public static void AddApplicationError(this HttpResponse response, string message)
+        {
+            response.Headers.Add("Application-Error", message);
+            response.Headers.Add("Access-Control-Expose-Headers", "Application-Error");
+            response.Headers.Add("Access-Control-Allow-Origin", "*");
+        }
 
-         public static int GetCurrentAge(this DateTime dateOfBirth)
-         {
-             var currentDate = DateTime.UtcNow;
-             int currentAge = (currentDate.Year - dateOfBirth.Year);
+        public static void AddPagination(this HttpResponse response, int currentPage, int itemsPerPage, int totalItems, int totalPages)
+        {
+            var paginationHeader = new PaginationHeader(currentPage, itemsPerPage, totalItems, totalPages);
+            var camelCaseFormatter = new JsonSerializerSettings();
+            camelCaseFormatter.ContractResolver = new CamelCasePropertyNamesContractResolver();
 
-             if(currentDate < dateOfBirth.AddYears(currentAge))
-             {
-                 currentAge--;
-             }
+            response.Headers.Add("Pagination", JsonConvert.SerializeObject(paginationHeader, camelCaseFormatter));
+            response.Headers.Add("Access-Control-Expose-Headers", "Pagination");
+        }
 
-             return currentAge;
-         }
+        public static int GetCurrentAge(this DateTime dateOfBirth)
+        {
+            var currentDate = DateTime.UtcNow;
+            int currentAge = (currentDate.Year - dateOfBirth.Year);
+
+            if (currentDate < dateOfBirth.AddYears(currentAge))
+            {
+                currentAge--;
+            }
+
+            return currentAge;
+        }
     }
 }

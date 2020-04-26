@@ -34,6 +34,7 @@ import { FileUploadModule } from 'ng2-file-upload';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { TimeagoModule } from 'ngx-timeago';
 
+
 export function tokenGetter() {
    return localStorage.getItem('token');
 } 
@@ -74,6 +75,7 @@ export function tokenGetter() {
       ReactiveFormsModule,
       BsDatepickerModule.forRoot(),
       TimeagoModule.forRoot()
+
    ],
    providers: [
       AuthService,

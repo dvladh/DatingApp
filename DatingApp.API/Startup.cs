@@ -98,7 +98,7 @@ namespace DatingApp.API
             }
 
             // app.UseHttpsRedirection();
-            // seeder.SeedUsers();
+            //seeder.SeedUsers();
             app.UseCors();                  
            
             app.UseRouting();
