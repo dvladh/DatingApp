@@ -11,6 +11,7 @@ namespace DatingApp.API.Helpers
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            var args = context.ActionArguments;
             var resultContext = await next();
 
             var userId = int.Parse(resultContext.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
