@@ -32,6 +32,8 @@ namespace DatingApp.API.Profiles
             
             CreateMap<UserForUpdateDto, User>();
             CreateMap<UserForRegisterDto, User>();
+
+            CreateMap<MessageForCreationDto, Message>().ReverseMap();
         }
     }
 }
