@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -38,6 +39,28 @@ namespace DatingApp.API.Controllers
             return NotFound();
         }
 
+        [HttpGet()]
+        public async Task<ActionResult> GetMessagesForUser(int userId, [FromQuery] MessageParams messageParams)
+        {
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            messageParams.UserId = userId;
+
+            var messagesFromDb = await _datingRepository.GetMessagesForUser(messageParams);
+
+            if (messagesFromDb == null)
+                NotFound();
+
+            var messagesForReturn = _mapper.Map<IEnumerable<MessageToReturnDto>>(messagesFromDb);
+
+            Response.AddPagination(messagesFromDb.CurrentPage, messagesFromDb.PageSize, messagesFromDb.TotalCount, messagesFromDb.TotalPages);
+
+            return Ok(messagesForReturn);
+        }
+
+
+
         [HttpPost()]
         public async Task<IActionResult> CreateMessage(int userId, MessageForCreationDto messageForCreationDto)
         {
@@ -62,6 +85,19 @@ namespace DatingApp.API.Controllers
             }
 
             throw new System.Exception("Created the message failed on save");
+        }
+
+        [HttpGet("thread/{recipientId}")]
+        public async Task<IActionResult> GetMessageThread(int userId, int recipientId)
+        {
+             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var messageFromDb = await _datingRepository.GetMssageThread(userId, recipientId);
+
+            var messageThread = _mapper.Map<IEnumerable<MessageToReturnDto>>(messageFromDb);
+
+            return Ok(messageThread);
         }
     }
 }
