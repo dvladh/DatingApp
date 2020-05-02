@@ -43,7 +43,7 @@ namespace DatingApp.API.Profiles
                 .ForMember(
                     dest => dest.SenderPhotoUrl,
                     opt => opt.MapFrom(src => src.Sender.Photos.FirstOrDefault(p => p.IsMain).Url)
-                );
+                ).ReverseMap();
         }
     }
 }

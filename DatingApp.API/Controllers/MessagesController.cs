@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -31,7 +33,7 @@ namespace DatingApp.API.Controllers
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            var message = await _datingRepository.GetMessage(id);
+            var message = await _datingRepository.GetMessage(id);            
 
             if (message != null)
                 return Ok(message);
@@ -64,23 +66,25 @@ namespace DatingApp.API.Controllers
         [HttpPost()]
         public async Task<IActionResult> CreateMessage(int userId, MessageForCreationDto messageForCreationDto)
         {
-            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            var sender = await _datingRepository.GetUser(userId);
+
+            if (sender.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
             messageForCreationDto.SenderId = userId;
-
+        
             var recipinet = await _datingRepository.GetUser(messageForCreationDto.RecipientId);
 
             if (recipinet == null)
                 return BadRequest("Could not find user");
 
             var message = _mapper.Map<Message>(messageForCreationDto);
-
+            
             _datingRepository.Add(message);
 
             if (await _datingRepository.SaveAll())
             {
-                var messageForReturn = _mapper.Map<MessageForCreationDto>(message);
+                var messageForReturn = _mapper.Map<MessageToReturnDto>(message);
                 return CreatedAtRoute("GetMessage", new { userId = userId, id = message.Id }, messageForReturn);
             }
 
@@ -98,6 +102,53 @@ namespace DatingApp.API.Controllers
             var messageThread = _mapper.Map<IEnumerable<MessageToReturnDto>>(messageFromDb);
 
             return Ok(messageThread);
+        }
+
+        [HttpPost("{id}")]
+        public async Task<IActionResult> DeleteMessage(int userId, int id)
+        {
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var messageForUpdate = await _datingRepository.GetMessage(id);
+
+            if(messageForUpdate.SenderId == userId) {
+                messageForUpdate.SenderDeleted = true;
+            }
+
+            if(messageForUpdate.RecipientId == userId) {
+                messageForUpdate.RecipientDeleted = true;
+            }
+
+            if(messageForUpdate.SenderDeleted && messageForUpdate.RecipientDeleted)
+                _datingRepository.Delete(messageForUpdate);
+           
+            if(await _datingRepository.SaveAll())
+            {
+                return NoContent();
+            }
+
+            throw new Exception("Error deleting the message");
+        }
+
+        [HttpPost("{id/read}")]
+        public async Task<IActionResult> MarkMessageAsRead(int userId, int id)
+        {
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var messageForUpdate = await _datingRepository.GetMessage(id);
+
+            if(messageForUpdate.RecipientId != userId) {
+                return Unauthorized();
+            }
+
+            messageForUpdate.IsRead = true;
+            messageForUpdate.DateRead = DateTime.Now;
+
+            await _datingRepository.SaveAll();
+
+            return NoContent();
         }
     }
 }
